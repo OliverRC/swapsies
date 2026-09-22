@@ -13,14 +13,20 @@ const hasMine = computed(() => books.value.some(b => b.mine))
 
 // class board: per sticker, how many kids still need it vs. spares floating around
 const board = computed(() => {
-  const by = new Map(group.value!.board.map(r => [r.no, r]))
+  const nameOf = new Map(group.value!.books.map(b => [b.id, b.childName]))
   return stickers.map((s) => {
-    const have = by.get(s.no)?.have ?? 0
-    const spare = by.get(s.no)?.spare ?? 0
+    // who has this sticker, most spares first
+    const owners = group.value!.holdings.filter(h => h.no === s.no)
+      .map(h => ({ name: nameOf.get(h.bookId) ?? '?', count: h.count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+    const spare = owners.reduce((n, o) => n + o.count - 1, 0)
     // nobody has it: greyed out · somebody has it but no spares: rare
-    return { ...s, need: group.value!.books.length - have, spare, missing: have === 0, rare: have > 0 && spare === 0 }
+    return { ...s, owners, spare, need: group.value!.books.length - owners.length, missing: !owners.length, rare: owners.length > 0 && spare === 0 }
   })
 })
+const picked = ref<typeof board.value[number]>()
+const who = ref<HTMLDialogElement>()
+function showWho(s: typeof board.value[number]) { picked.value = s; who.value!.showModal() }
 
 const groupUrl = () => `${location.origin}/g/${code}`
 
@@ -113,14 +119,35 @@ onMounted(() => window.addEventListener('focus', () => refresh()))
         <li><span class="swatch plain"><span class="plus">+2</span></span> Spares in the class</li>
       </ul>
       <div class="grid">
-        <div v-for="s in board" :key="s.no" class="tile" :class="[s.missing ? 'need' : 'got', { rare: s.rare, golden: s.golden }]" :style="{ '--c': s.rare ? 'var(--pink)' : 'var(--teal)' }" :title="s.name">
+        <button v-for="s in board" :key="s.no" class="tile" :class="[s.missing ? 'need' : 'got', { rare: s.rare, golden: s.golden }]" :style="{ '--c': s.rare ? 'var(--pink)' : 'var(--teal)' }" :aria-label="`${s.name}: who has it`" @click="showWho(s)">
           <span class="no">{{ s.no }}</span>
           <StickerIcon :no="s.no" />
           <span class="stat"><Hand />{{ s.need }}</span>
           <span v-if="s.spare" class="plus">+{{ s.spare }}</span>
-        </div>
+        </button>
       </div>
     </details>
+
+    <!-- who has this sticker -->
+    <dialog ref="who" @click.self="who!.close()">
+      <div v-if="picked" class="stack">
+        <div class="row">
+          <StickerIcon :no="picked.no" style="width: 56px; height: 56px" />
+          <div class="grow">
+            <h2>#{{ picked.no }} {{ picked.name }}</h2>
+            <p class="muted">{{ picked.need }} still need it · {{ picked.spare }} spare{{ picked.spare === 1 ? '' : 's' }} in the class</p>
+          </div>
+        </div>
+        <p v-if="!picked.owners.length" class="muted center">Nobody has this one yet.</p>
+        <div v-for="o in picked.owners" :key="o.name" class="card link" style="padding: 10px 14px">
+          <div class="avatar" :style="{ background: avatarColor(o.name) }">{{ o.name[0]?.toUpperCase() }}</div>
+          <b class="grow">{{ o.name }}</b>
+          <span v-if="o.count > 1" class="badge orange">+{{ o.count - 1 }} spare{{ o.count === 2 ? '' : 's' }}</span>
+          <span v-else class="badge">has it</span>
+        </div>
+        <button class="ghost wide" @click="who!.close()">Close</button>
+      </div>
+    </dialog>
 
     <p class="center muted"><NuxtLink :to="`/g/${code}/admin`">Group admin</NuxtLink> · lost a PIN? Ask whoever made the group.</p>
   </div>
