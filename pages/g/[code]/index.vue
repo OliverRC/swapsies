@@ -84,7 +84,7 @@ onMounted(() => window.addEventListener('focus', () => refresh()))
         </div>
         <div class="row" style="margin-top: 6px">
           <div class="bar grow"><i :style="{ width: `${b.got / stickers.length * 100}%` }" /></div>
-          <span class="muted">{{ b.got }} / {{ stickers.length }}</span>
+          <span class="muted count">{{ b.got }} / {{ stickers.length }}</span>
         </div>
       </div>
     </NuxtLink>

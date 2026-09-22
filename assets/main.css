@@ -146,3 +146,6 @@ summary svg.lucide { margin-right: 4px; }
 .legend .swatch .sticker-icon { width: 22px; margin: 0; }
 .legend .swatch.plain { color: var(--muted); }
 .legend .swatch .plus { position: static; animation: none; font-size: .7rem; font-weight: 700; background: var(--pink); color: #fff; border-radius: 99px; padding: 1px 6px; }
+
+/* fixed-width count so every progress bar is the same length */
+.count { flex: none; min-width: 3.6em; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }

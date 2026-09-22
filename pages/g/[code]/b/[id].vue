@@ -120,7 +120,7 @@ const badgeKey = (t: { status: string, sent: boolean }) => (t.status === 'offere
       <h1>{{ book.childName }}'s stickers</h1>
       <div class="row" style="margin-top: 6px">
         <div class="bar grow"><i :style="{ width: `${got / stickers.length * 100}%` }" /></div>
-        <b>{{ got }} / {{ stickers.length }}</b>
+        <b class="count">{{ got }} / {{ stickers.length }}</b>
       </div>
     </div>
 
