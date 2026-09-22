@@ -9,7 +9,7 @@
     "db:remote": "wrangler d1 execute swapsies --remote --file=schema.sql",
     "deploy": "nuxt build && wrangler deploy",
     "test": "node --test server/utils/matching.test.ts",
-    "reorder": "nuxt build && ./backup.sh && wrangler d1 execute swapsies --remote -y --file=migrate.sql && wrangler deploy && wrangler d1 execute swapsies --local -y --file=migrate.sql; rm -f migrate.sql",
+    "reorder": "nuxt build && STICKERS=stickers.before.json ./backup.sh && wrangler d1 execute swapsies --remote -y --file=migrate.sql && wrangler deploy && wrangler d1 execute swapsies --local -y --file=migrate.sql; rm -f migrate.sql stickers.before.json",
     "backup": "./backup.sh"
   },
   "dependencies": {

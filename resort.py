@@ -5,6 +5,7 @@
 # deploying: each run's mapping is appended, so they replay in order.
 import json, os, shutil
 s = json.load(open('stickers.json'))
+if not os.path.exists('stickers.before.json'): shutil.copy('stickers.json', 'stickers.before.json')  # numbering the DB is on until pnpm reorder runs
 assert len(s) == 50 and len({x['no'] for x in s}) == 50, 'numbers must be unique: images and DB are keyed by the current no'
 s.sort(key=lambda x: x['name'].casefold())
 m = {x['no']: new for new, x in enumerate(s, 1)}
