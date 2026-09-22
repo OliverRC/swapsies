@@ -20,4 +20,9 @@ TODO: `stickers.json` numbering follows the order Oliver typed from the promo ba
 Books store counts **by sticker number**, so renumbering without migrating scrambles every parent's book.
 1. Edit only `name` values in `stickers.json` (never `no`).
 2. `python3 resort.py` sorts alphabetically, renumbers the images, and appends the D1 migration to `migrate.sql`.
-3. `pnpm reorder` builds, applies `migrate.sql` to production, deploys, then applies it locally. Run it straight after step 2: edits made between the migration and the deploy (a few seconds) would land on old numbers.
+3. `pnpm reorder` builds, **backs up production to `backups/`**, applies `migrate.sql` to production, deploys, then applies it locally. Run it straight after step 2: edits made between the migration and the deploy (a few seconds) would land on old numbers.
+
+## Backups
+`pnpm backup` dumps production D1 to `backups/<time>.sql` and saves the D1 Time Travel bookmark next to it.
+Restore either with `wrangler d1 execute swapsies --remote --file=backups/<time>.sql` (after clearing the tables)
+or server-side with `wrangler d1 time-travel restore swapsies --bookmark=<from the .bookmark file>` (30-day window).

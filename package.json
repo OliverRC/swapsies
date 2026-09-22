@@ -9,7 +9,8 @@
     "db:remote": "wrangler d1 execute swapsies --remote --file=schema.sql",
     "deploy": "nuxt build && wrangler deploy",
     "test": "node --test server/utils/matching.test.ts",
-    "reorder": "nuxt build && wrangler d1 execute swapsies --remote -y --file=migrate.sql && wrangler deploy && wrangler d1 execute swapsies --local -y --file=migrate.sql; rm -f migrate.sql"
+    "reorder": "nuxt build && ./backup.sh && wrangler d1 execute swapsies --remote -y --file=migrate.sql && wrangler deploy && wrangler d1 execute swapsies --local -y --file=migrate.sql; rm -f migrate.sql",
+    "backup": "./backup.sh"
   },
   "dependencies": {
     "@lucide/vue": "^1.47.0",
