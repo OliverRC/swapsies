@@ -113,7 +113,7 @@ onMounted(() => window.addEventListener('focus', () => refresh()))
         <li><span class="swatch plain"><span class="plus">+2</span></span> Spares in the class</li>
       </ul>
       <div class="grid">
-        <div v-for="s in board" :key="s.no" class="tile" :class="[s.missing ? 'need' : 'got', { rare: s.rare, golden: s.golden }]" :style="{ '--c': s.color }" :title="s.name">
+        <div v-for="s in board" :key="s.no" class="tile" :class="[s.missing ? 'need' : 'got', { rare: s.rare, golden: s.golden }]" :style="{ '--c': s.rare ? 'var(--pink)' : 'var(--teal)' }" :title="s.name">
           <span class="no">{{ s.no }}</span>
           <StickerIcon :no="s.no" />
           <span class="stat"><Hand />{{ s.need }}</span>
