@@ -1,0 +1,7 @@
+node_modules
+.nuxt
+.output
+.wrangler
+.env
+.DS_Store
+.env.production
