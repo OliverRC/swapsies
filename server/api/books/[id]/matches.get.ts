@@ -7,7 +7,10 @@ export default defineEventHandler(async (event) => {
     if (!books.has(r.id)) books.set(r.id, { id: r.id, childName: r.childName, holdings: {} })
     if (r.no) books.get(r.id)!.holdings[r.no] = r.count
   }
-  const mine = books.get(me.id)!.holdings
+  // promised spares (accepted trades) aren't on offer; spares in open offers are, but the trade window warns
+  const [promised, offered] = await Promise.all([tiedUp(event, me.group_id, 'accepted'), tiedUp(event, me.group_id, 'offered')])
+  const mine = unpromised(books.get(me.id)!.holdings, promised[me.id])
   books.delete(me.id)
-  return computeMatches(mine, [...books.values()], STICKER_TOTAL)
+  const others = [...books.values()].map(b => ({ ...b, holdings: unpromised(b.holdings, promised[b.id]), inOffers: Object.keys(offered[b.id] ?? {}).map(Number) }))
+  return computeMatches(mine, others, STICKER_TOTAL)
 })

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowLeft, ArrowLeftRight, Ban, BookOpen, Check, Clock, Handshake, Heart, Lock, Mail, Motorbike, Repeat, Scale, Send, ThumbsUp, X } from '@lucide/vue'
+import { ArrowLeft, ArrowLeftRight, Ban, BookOpen, Check, Clock, Handshake, Heart, Lock, Mail, Motorbike, Repeat, Scale, Send, ThumbsUp, TriangleAlert, X } from '@lucide/vue'
 import stickers from '~~/stickers.json'
 
 const { code, id } = useRoute().params as { code: string, id: string }
@@ -62,7 +62,7 @@ async function lock() {
 }
 
 // --- trade window ---------------------------------------------------------
-type Match = { id: string, childName: string, theyCanGive: number[], iCanGive: number[], perfect: boolean }
+type Match = { id: string, childName: string, theyCanGive: number[], iCanGive: number[], perfect: boolean, inOffers: number[] }
 const dialog = ref<HTMLDialogElement>()
 const friend = ref<Match>()
 const give = ref<number[]>([])
@@ -75,6 +75,11 @@ function openTrade(m: Match) {
   get.value = m.theyCanGive.slice(0, fair)
   dialog.value!.showModal()
 }
+// picked stickers already in another open offer: not blocked (first to accept wins), just flagged
+const clash = computed(() => {
+  const mine = new Set(trades.value.filter(t => t.status === 'offered').flatMap(t => t.iGive))
+  return [...give.value.filter(no => mine.has(no)), ...get.value.filter(no => friend.value?.inOffers.includes(no))].sort((a, b) => a - b)
+})
 const toggle = (list: number[], no: number) => list.includes(no) ? list.splice(list.indexOf(no), 1) : list.push(no)
 
 async function sendOffer() {
@@ -220,6 +225,7 @@ const badgeKey = (t: { status: string, sent: boolean }) => (t.status === 'offere
           </div>
         </div>
         <p class="center muted">{{ give.length }} for {{ get.length }}<template v-if="give.length && give.length === get.length"> · <Scale /> fair swap</template></p>
+        <p v-if="clash.length" class="center warn"><TriangleAlert /> {{ clash.map(no => `#${no}`).join(', ') }} {{ clash.length > 1 ? 'are' : 'is' }} already in another offer. Whoever accepts first gets {{ clash.length > 1 ? 'them' : 'it' }}.</p>
         <div class="row">
           <button type="button" class="ghost" @click="dialog!.close()">Close</button>
           <button class="orange grow" :disabled="!give.length && !get.length"><Send /> Send offer</button>

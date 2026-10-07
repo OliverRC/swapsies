@@ -12,6 +12,7 @@ h1 { font-size: 1.7rem; font-weight: 700; }
 h2 { font-size: 1.15rem; font-weight: 600; }
 a { color: var(--teal-dark); }
 .muted { color: var(--muted); font-size: .9rem; }
+.warn { color: #c2410c; font-size: .9rem; font-weight: 500; }
 .stack > * + * { margin-top: 12px; }
 .row { display: flex; align-items: center; gap: 10px; }
 .row > .grow { flex: 1; min-width: 0; }

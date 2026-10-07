@@ -27,14 +27,14 @@ export default defineEventHandler(async (event) => {
     return { status: rule.status }
   }
 
-  // accept + done: make sure both kids still have the spares
+  // accept + done: make sure both kids still have the spares, and haven't promised them in another accepted trade
   const give: number[] = JSON.parse(t.give_json)
   const get: number[] = JSON.parse(t.get_json)
   for (const [bookId, nos] of [[t.from_book, give], [t.to_book, get]] as const) {
-    const no = await missingSpare(event, bookId, nos)
+    const no = await missingSpare(event, { id: bookId, group_id: t.group_id }, nos, t.id)
     if (no) {
       const b = await bookById(event, bookId)
-      throw fail(409, `${b.child_name} doesn't have a spare #${no} any more`)
+      throw fail(409, `${b.child_name}'s spare #${no} is gone or already promised in another trade`)
     }
   }
   if (action === 'accept') {

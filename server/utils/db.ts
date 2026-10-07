@@ -87,8 +87,16 @@ export async function holdingsOf(event: H3Event, bookId: string) {
   const { results } = await db(event).prepare('SELECT sticker_no, count FROM holdings WHERE book_id = ? AND count > 0').bind(bookId).all()
   return Object.fromEntries(results.map((r: any) => [r.sticker_no, r.count])) as Record<number, number>
 }
-/** First sticker in `nos` the book has no spare of, or undefined. */
-export async function missingSpare(event: H3Event, bookId: string, nos: number[]) {
-  const h = await holdingsOf(event, bookId)
+/** Each book's stickers tied up in the group's trades with this status: bookId -> sticker no -> count. */
+export async function tiedUp(event: H3Event, groupId: string, status: 'offered' | 'accepted', exceptTrade = '') {
+  const { results } = await db(event).prepare('SELECT from_book, to_book, give_json, get_json FROM trades WHERE group_id = ? AND status = ? AND id != ?')
+    .bind(groupId, status, exceptTrade).all()
+  return tally(results as any)
+}
+/** First sticker in `nos` the book has no free spare of, or undefined. Spares promised in other accepted trades aren't free. */
+// ponytail: check-then-write, two accepts in the same instant can both pass; gate the accept UPDATE in SQL if it ever happens
+export async function missingSpare(event: H3Event, book: { id: string, group_id: string }, nos: number[], exceptTrade?: string) {
+  const promised = (await tiedUp(event, book.group_id, 'accepted', exceptTrade))[book.id]
+  const h = unpromised(await holdingsOf(event, book.id), promised)
   return nos.find(no => (h[no] ?? 0) < 2)
 }
