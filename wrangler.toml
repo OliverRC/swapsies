@@ -11,3 +11,9 @@ binding = "ASSETS"
 binding = "DB"
 database_name = "swapsies"
 database_id = "37fa44ab-c02f-463c-b05d-43c644b27606"
+
+# Previews inherit nothing from production. Same live DB on purpose: previews are mostly UI changes.
+[[previews.d1_databases]]
+binding = "DB"
+database_name = "swapsies"
+database_id = "37fa44ab-c02f-463c-b05d-43c644b27606"
