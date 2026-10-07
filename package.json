@@ -22,5 +22,6 @@
   "devDependencies": {
     "nitro-cloudflare-dev": "^0.2.2",
     "wrangler": "^4.135.0"
-  }
+  },
+  "packageManager": "pnpm@11.24.0"
 }
