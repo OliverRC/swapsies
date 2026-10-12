@@ -29,6 +29,9 @@ export function tally(trades: TradeRow[]) {
   for (const t of trades) { add(t.from_book, JSON.parse(t.give_json)); add(t.to_book, JSON.parse(t.get_json)) }
   return out
 }
-/** Holdings minus copies promised away. Never below 1: the kid still owns the sticker. */
+/** Holdings minus copies promised away. Never below 1 while owned: the kid keeps their copy. */
 export const unpromised = (h: Holdings, promised: Holdings = {}) =>
-  Object.fromEntries(Object.entries(h).map(([no, n]) => [no, Math.max(1, n - (promised[+no] ?? 0))])) as Holdings
+  Object.fromEntries(Object.entries(h).map(([no, n]) => [no, Math.max(Math.min(n, 1), n - (promised[+no] ?? 0))])) as Holdings
+/** Stickers whose free spares are all claimed by open offers: one more offer would compete. `h` should be unpromised. */
+export const contested = (h: Holdings, offered: Holdings = {}) =>
+  Object.keys(offered).map(Number).filter(no => offered[no] >= (h[no] ?? 0) - 1)

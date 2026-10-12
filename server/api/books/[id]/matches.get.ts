@@ -11,6 +11,9 @@ export default defineEventHandler(async (event) => {
   const [promised, offered] = await Promise.all([tiedUp(event, me.group_id, 'accepted'), tiedUp(event, me.group_id, 'offered')])
   const mine = unpromised(books.get(me.id)!.holdings, promised[me.id])
   books.delete(me.id)
-  const others = [...books.values()].map(b => ({ ...b, holdings: unpromised(b.holdings, promised[b.id]), inOffers: Object.keys(offered[b.id] ?? {}).map(Number) }))
+  const others = [...books.values()].map((b) => {
+    const holdings = unpromised(b.holdings, promised[b.id])
+    return { ...b, holdings, contested: contested(holdings, offered[b.id]) }
+  })
   return computeMatches(mine, others, STICKER_TOTAL)
 })

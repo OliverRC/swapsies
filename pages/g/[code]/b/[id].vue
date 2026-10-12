@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ArrowLeft, ArrowLeftRight, Ban, BookOpen, Check, Clock, Handshake, Heart, Lock, Mail, Motorbike, Repeat, Scale, Send, ThumbsUp, TriangleAlert, X } from '@lucide/vue'
 import stickers from '~~/stickers.json'
+import { contested, type Holdings, unpromised } from '~~/server/utils/matching'
 
 const { code, id } = useRoute().params as { code: string, id: string }
 const { toast, oops } = useToast()
@@ -62,7 +63,7 @@ async function lock() {
 }
 
 // --- trade window ---------------------------------------------------------
-type Match = { id: string, childName: string, theyCanGive: number[], iCanGive: number[], perfect: boolean, inOffers: number[] }
+type Match = { id: string, childName: string, theyCanGive: number[], iCanGive: number[], perfect: boolean, contested: number[] }
 const dialog = ref<HTMLDialogElement>()
 const friend = ref<Match>()
 const give = ref<number[]>([])
@@ -76,9 +77,15 @@ function openTrade(m: Match) {
   dialog.value!.showModal()
 }
 // picked stickers already in another open offer: not blocked (first to accept wins), just flagged
+// counted per copy: three #15s = two spares, so one open offer still leaves one free
+const myGiving = (status: string) => {
+  const h: Holdings = {}
+  for (const t of trades.value) if (t.status === status) for (const no of t.iGive) h[no] = (h[no] ?? 0) + 1
+  return h
+}
 const clash = computed(() => {
-  const mine = new Set(trades.value.filter(t => t.status === 'offered').flatMap(t => t.iGive))
-  return [...give.value.filter(no => mine.has(no)), ...get.value.filter(no => friend.value?.inOffers.includes(no))].sort((a, b) => a - b)
+  const mine = contested(unpromised(counts.value, myGiving('accepted')), myGiving('offered'))
+  return [...give.value.filter(no => mine.includes(no)), ...get.value.filter(no => friend.value?.contested.includes(no))].sort((a, b) => a - b)
 })
 const toggle = (list: number[], no: number) => list.includes(no) ? list.splice(list.indexOf(no), 1) : list.push(no)
 

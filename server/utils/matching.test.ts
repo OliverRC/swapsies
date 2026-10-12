@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { computeMatches, tally, unpromised } from './matching.ts'
+import { computeMatches, contested, tally, unpromised } from './matching.ts'
 
 test('ranks by fair swap size, then total', () => {
   const mine = { 1: 2, 2: 3, 3: 1 } // swaps: 1,2 · needs: 4,5 (total 5)
@@ -20,4 +20,12 @@ test('promised spares are not free, but the kid keeps their copy', () => {
   assert.deepEqual(promised, { ava: { 12: 2, 7: 1 }, ben: { 3: 1 }, cara: { 5: 1 } })
   // ava: three #12 = two spares, both promised · #7 over-promised (old data) still leaves her copy · #9 untouched
   assert.deepEqual(unpromised({ 12: 3, 7: 2, 9: 2 }, promised.ava), { 12: 1, 7: 1, 9: 2 })
+})
+
+test('an offer only competes once every free spare is already offered', () => {
+  // three #15s = two spares. One open offer (to Lily) leaves one free, so offering it to Theophania is fine.
+  assert.deepEqual(contested({ 15: 3 }, { 15: 1 }), [])
+  assert.deepEqual(contested({ 15: 3 }, { 15: 2 }), [15]) // both spares offered: a third offer would compete
+  assert.deepEqual(contested({ 15: 2, 4: 3 }, { 15: 1, 4: 1 }), [15]) // one spare, already offered
+  assert.deepEqual(unpromised({ 15: 0 }, {}), { 15: 0 }) // a zeroed count stays zero, not a phantom copy
 })
